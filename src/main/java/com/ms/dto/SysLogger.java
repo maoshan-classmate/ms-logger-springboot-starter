@@ -33,6 +33,6 @@ public class SysLogger {
     /**
      * 请求耗时
      */
-    private String cost;
+    private long cost;
 
 }

@@ -1,5 +1,7 @@
 package com.ms.aspect;
 
+import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.date.TimeInterval;
 import cn.hutool.json.JSONUtil;
 import com.ms.annotation.MsLogger;
 import com.ms.dto.SysLogger;
@@ -29,7 +31,7 @@ public class MsLoggerAspect {
 
     private static final Logger logger = LoggerFactory.getLogger(MsLoggerAspect.class);
 
-//    private static final TimeInterval timer = DateUtil.timer();
+    private static final TimeInterval TIMER = DateUtil.timer();
 
     @Pointcut(value = "@annotation(com.ms.annotation.MsLogger)")
     public void pointcut() {
@@ -39,12 +41,19 @@ public class MsLoggerAspect {
     public Object recordSysLogger(ProceedingJoinPoint joinPoint) throws Throwable {
         SysLogger sysLogger = buildSysLogger(joinPoint);
         try {
-             return joinPoint.proceed();
+            Object proceed = joinPoint.proceed();
+            sysLogger.setCost(TIMER.interval());
+            return proceed;
         } finally {
             logger.info(JSONUtil.toJsonStr(sysLogger));
         }
     }
 
+    /**
+     * 构建日志对象
+     * @param joinPoint 切点
+     * @return 日志对象
+     */
     protected SysLogger buildSysLogger(ProceedingJoinPoint joinPoint) {
         MethodSignature methodSignature = (MethodSignature) joinPoint.getSignature();
         Method method = methodSignature.getMethod();
