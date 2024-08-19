@@ -20,7 +20,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
-import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
@@ -34,10 +33,7 @@ import java.util.HashMap;
 @Component
 @Aspect
 public class MsLoggerAspect {
-
-    @Resource
-    private MsLoggerProperties msLoggerProperties;
-
+    private final MsLoggerProperties msLoggerProperties = MsLoggerProperties.getInstance();
     private static final Logger LOGGER = LoggerFactory.getLogger(MsLoggerAspect.class);
 
     private static final TimeInterval TIMER = DateUtil.timer();
@@ -49,8 +45,8 @@ public class MsLoggerAspect {
     }
 
     @Before("pointcut()")
-    public void doBefore(JoinPoint joinPoint){
-        if (msLoggerProperties.isEnable()){
+    public void doBefore(JoinPoint joinPoint) {
+        if (msLoggerProperties.isEnable()) {
             // 通过Spring提供的请求上下文工具，获取request
             ServletRequestAttributes requestAttributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
             HttpServletRequest request = requestAttributes.getRequest();
@@ -61,7 +57,7 @@ public class MsLoggerAspect {
 
     @Around("pointcut()")
     public Object recordSysLogger(ProceedingJoinPoint joinPoint) throws Throwable {
-        if (msLoggerProperties.isEnable()){
+        if (msLoggerProperties.isEnable()) {
             SysLogger sysLogger = buildSysLogger(joinPoint);
             try {
                 TIMER.start();
@@ -71,7 +67,7 @@ public class MsLoggerAspect {
             } finally {
                 LOGGER.info(JSONUtil.toJsonStr(sysLogger));
             }
-        }else{
+        } else {
             return joinPoint.proceed();
         }
     }
@@ -105,6 +101,7 @@ public class MsLoggerAspect {
 
     /**
      * 获取IP地址
+     *
      * @param request 请求
      * @return IP地址
      */
