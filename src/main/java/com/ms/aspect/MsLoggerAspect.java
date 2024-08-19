@@ -4,6 +4,7 @@ import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.date.TimeInterval;
 import cn.hutool.json.JSONUtil;
 import com.ms.annotation.MsLogger;
+import com.ms.config.MsLoggerProperties;
 import com.ms.dto.SysLogger;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.JoinPoint;
@@ -19,6 +20,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
@@ -33,6 +35,8 @@ import java.util.HashMap;
 @Aspect
 public class MsLoggerAspect {
 
+    @Resource
+    private MsLoggerProperties msLoggerProperties;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MsLoggerAspect.class);
 
@@ -46,23 +50,29 @@ public class MsLoggerAspect {
 
     @Before("pointcut()")
     public void doBefore(JoinPoint joinPoint){
-        // 通过Spring提供的请求上下文工具，获取request
-        ServletRequestAttributes requestAttributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
-        HttpServletRequest request = requestAttributes.getRequest();
-        sysLogger.setIpAddress(getClientIp(request));
-        sysLogger.setApiUrl(request.getRequestURL().toString());
+        if (msLoggerProperties.isEnable()){
+            // 通过Spring提供的请求上下文工具，获取request
+            ServletRequestAttributes requestAttributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+            HttpServletRequest request = requestAttributes.getRequest();
+            sysLogger.setIpAddress(getClientIp(request));
+            sysLogger.setApiUrl(request.getRequestURL().toString());
+        }
     }
 
     @Around("pointcut()")
     public Object recordSysLogger(ProceedingJoinPoint joinPoint) throws Throwable {
-        SysLogger sysLogger = buildSysLogger(joinPoint);
-        try {
-            TIMER.start();
-            Object proceed = joinPoint.proceed();
-            sysLogger.setCost(TIMER.intervalMs());
-            return proceed;
-        } finally {
-            LOGGER.info(JSONUtil.toJsonStr(sysLogger));
+        if (msLoggerProperties.isEnable()){
+            SysLogger sysLogger = buildSysLogger(joinPoint);
+            try {
+                TIMER.start();
+                Object proceed = joinPoint.proceed();
+                sysLogger.setCost(TIMER.intervalMs());
+                return proceed;
+            } finally {
+                LOGGER.info(JSONUtil.toJsonStr(sysLogger));
+            }
+        }else{
+            return joinPoint.proceed();
         }
     }
 
