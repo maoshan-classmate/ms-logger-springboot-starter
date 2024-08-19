@@ -31,8 +31,13 @@ public class SysLogger {
     private String ipAddress;
 
     /**
-     * 请求耗时
+     * 请求耗时（毫秒）
      */
     private long cost;
+
+    /**
+     * 接口URL
+     */
+    private String apiUrl;
 
 }
