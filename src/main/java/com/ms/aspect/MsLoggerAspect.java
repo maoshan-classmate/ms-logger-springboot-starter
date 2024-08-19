@@ -44,13 +44,7 @@ public class MsLoggerAspect {
 
     private final SysLogger sysLogger = new SysLogger();
 
-    /**
-     * TODO 类级别的切点
-     */
-//    @Pointcut("execution()")
-//    public void matchLogPointcut(){
-//
-//    }
+
 
     @Pointcut("@annotation(com.ms.annotation.MsLogger) ")
     public void pointcut() {
