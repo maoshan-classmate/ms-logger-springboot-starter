@@ -48,6 +48,11 @@ public class MsLoggerAspect {
 
     private final SysLogger sysLogger = new SysLogger();
 
+    private static final String[] HEADERS = {
+            "X-Forwarded-For", "Proxy-Client-IP", "WL-Proxy-Client-IP",
+            "HTTP_CLIENT_IP", "HTTP_X_FORWARDED_FOR"
+    };
+
 
     @Pointcut("@annotation(com.ms.annotation.MsLogger) || @within(com.ms.annotation.MsLogger) ")
     public void pointcut() {
@@ -120,32 +125,49 @@ public class MsLoggerAspect {
     }
 
     /**
-     * 获取IP地址
+     * 获取客户端的真实IP地址。
+     * 首先尝试从各种代理头部获取IP，如果都失败，则返回请求的远程地址。
      *
-     * @param request 请求
-     * @return IP地址
+     * @param request HTTP请求对象
+     * @return 客户端的IP地址
      */
     private String getClientIp(HttpServletRequest request) {
-        String ip = request.getHeader("X-Forwarded-For");
-        if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip)) {
-            ip = request.getHeader("Proxy-Client-IP");
+        // 循环尝试获取头部中的IP地址
+        for (String header : HEADERS) {
+            String ip = getHeaderOrUnknown(request, header);
+            if (!"unknown".equalsIgnoreCase(ip)) {
+                return processIp(ip);
+            }
         }
-        if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip)) {
-            ip = request.getHeader("WL-Proxy-Client-IP");
-        }
-        if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip)) {
-            ip = request.getHeader("HTTP_CLIENT_IP");
-        }
-        if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip)) {
-            ip = request.getHeader("HTTP_X_FORWARDED_FOR");
-        }
-        if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip)) {
-            ip = request.getRemoteAddr();
-        }
+        // 如果所有头部都没有有效IP，则返回请求的远程地址
+        return request.getRemoteAddr();
+    }
 
-        // 处理 X-Forwarded-For 头部可能出现的多个 IP 地址的情况
-        if (ip != null && ip.indexOf(",") > 0) {
-            ip = ip.split(",")[0];
+    /**
+     * 从请求头部获取值，如果没有则返回 "unknown"。
+     *
+     * @param request HTTP请求对象
+     * @param headerName 头部名称
+     * @return 头部的值或 "unknown"
+     */
+    private String getHeaderOrUnknown(HttpServletRequest request, String headerName) {
+        String value = request.getHeader(headerName);
+        // 如果头部值不为空且不为 ""，则返回头部值，否则返回 "unknown"
+        return (value != null && !value.isEmpty()) ? value : "unknown";
+    }
+
+    /**
+     * 处理从头部获取的IP字符串。
+     * 如果IP字符串中包含多个IP地址（用逗号分隔），则只返回第一个IP地址。
+     *
+     * @param ip 从头部获取的原始IP字符串
+     * @return 处理后的IP地址
+     */
+    private String processIp(String ip) {
+        if (ip != null && ip.contains(",")) {
+            String[] parts = ip.split(",");
+            // 返回第一个IP地址，并去除前后空白字符
+            return parts[0].trim();
         }
         return ip;
     }
