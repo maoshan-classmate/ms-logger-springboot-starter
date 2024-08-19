@@ -36,20 +36,33 @@ public class MsLoggerAspect {
     private final MsLoggerProperties msLoggerProperties = MsLoggerProperties.getInstance();
     private static final Logger LOGGER = LoggerFactory.getLogger(MsLoggerAspect.class);
 
+    private static final ServletRequestAttributes REQUEST_ATTRIBUTES = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+
     private static final TimeInterval TIMER = DateUtil.timer();
 
     private final SysLogger sysLogger = new SysLogger();
 
-    @Pointcut(value = "@annotation(com.ms.annotation.MsLogger)")
+    /**
+     * TODO 类级别的切点
+     */
+    @Pointcut("")
+    public void matchLogPointcut(){
+        String serverPath = msLoggerProperties.getServerPath();
+        if ("/".equals(serverPath)) {
+
+        } else {
+
+        }
+    }
+
+    @Pointcut("@annotation(com.ms.annotation.MsLogger) || matchLogPointcut() ")
     public void pointcut() {
     }
 
     @Before("pointcut()")
     public void doBefore(JoinPoint joinPoint) {
         if (msLoggerProperties.isEnable()) {
-            // 通过Spring提供的请求上下文工具，获取request
-            ServletRequestAttributes requestAttributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
-            HttpServletRequest request = requestAttributes.getRequest();
+            HttpServletRequest request = REQUEST_ATTRIBUTES.getRequest();
             sysLogger.setIpAddress(getClientIp(request));
             sysLogger.setApiUrl(request.getRequestURL().toString());
         }
@@ -76,8 +89,10 @@ public class MsLoggerAspect {
         MethodSignature methodSignature = (MethodSignature) joinPoint.getSignature();
         Method method = methodSignature.getMethod();
         MsLogger msLogger = method.getAnnotation(MsLogger.class);
-        sysLogger.setLogDesc(msLogger.desc());
         sysLogger.setMethodName(method.getDeclaringClass().getSimpleName() + "." + method.getName());
+        if (msLogger != null) {
+            sysLogger.setLogDesc(msLogger.desc());
+        }
         try {
             // 处理入参
             Parameter[] parameters = methodSignature.getMethod().getParameters();
@@ -114,4 +129,14 @@ public class MsLoggerAspect {
             return xff.contains(",") ? xff.split(",")[0] : xff;
         }
     }
+
+    /**
+     * 获取匹配的Url
+     * @return url
+     */
+//    private String getMatchUrl(){
+//        return msLoggerProperties.getServerPath();
+//    }
+
+
 }

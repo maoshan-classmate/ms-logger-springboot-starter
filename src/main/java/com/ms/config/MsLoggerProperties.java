@@ -32,7 +32,7 @@ public class MsLoggerProperties {
     /**
      * 日志监控路径
      */
-    private String serverPath = "/**";
+    private String serverPath = "/";
 
 
 }
