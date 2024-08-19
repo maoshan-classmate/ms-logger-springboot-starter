@@ -33,7 +33,9 @@ import java.util.HashMap;
 @Component
 @Aspect
 public class MsLoggerAspect {
+
     private final MsLoggerProperties msLoggerProperties = MsLoggerProperties.getInstance();
+
     private static final Logger LOGGER = LoggerFactory.getLogger(MsLoggerAspect.class);
 
     private static final ServletRequestAttributes REQUEST_ATTRIBUTES = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
@@ -45,17 +47,12 @@ public class MsLoggerAspect {
     /**
      * TODO 类级别的切点
      */
-    @Pointcut("")
-    public void matchLogPointcut(){
-        String serverPath = msLoggerProperties.getServerPath();
-        if ("/".equals(serverPath)) {
+//    @Pointcut("execution()")
+//    public void matchLogPointcut(){
+//
+//    }
 
-        } else {
-
-        }
-    }
-
-    @Pointcut("@annotation(com.ms.annotation.MsLogger) || matchLogPointcut() ")
+    @Pointcut("@annotation(com.ms.annotation.MsLogger) ")
     public void pointcut() {
     }
 

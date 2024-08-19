@@ -4,6 +4,8 @@ import lombok.Getter;
 import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
+import java.util.List;
+
 /**
  * @author xuzw
  * @version 1.0
@@ -32,7 +34,7 @@ public class MsLoggerProperties {
     /**
      * 日志监控路径
      */
-    private String serverPath = "/";
+    private List<String> includePaths;
 
 
 }
