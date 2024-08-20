@@ -81,10 +81,10 @@ public class MsLoggerAspect {
         if (annotationHandler != null && !annotationHandler.isInterface()) {
             loggerHandler = applicationContext.getBean(annotationHandler);
         }
+        Object[] args = joinPoint.getArgs();
         if (msLoggerProperties.isEnable()) {
             Logger logger = buildSysLogger(joinPoint);
             MsLoggerAbstractStrategy msLoggerStrategy = MsLoggerFactory.getMsLoggerStrategy(msLoggerProperties.getLoggerStrategy());
-            Object[] args = joinPoint.getArgs();
             Object result;
             try {
                 TIMER.start();
@@ -96,12 +96,11 @@ public class MsLoggerAspect {
                 LOGGER.error("记录日志异常：{}", e.getMessage());
                 throw e;
             }
-            return result;
         }
         if (loggerHandler != null) {
             loggerHandler.handleLogger();
         }
-        return joinPoint.proceed();
+        return joinPoint.proceed(args);
     }
 
     /**
