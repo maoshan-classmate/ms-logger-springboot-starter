@@ -3,6 +3,7 @@ package com.ms.aspect;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.date.TimeInterval;
 import cn.hutool.json.JSONUtil;
+import com.ms.handler.MsLoggerHandler;
 import com.ms.annotation.MsLogger;
 import com.ms.config.MsLoggerProperties;
 import com.ms.dto.Logger;
@@ -17,9 +18,11 @@ import org.aspectj.lang.annotation.Before;
 import org.aspectj.lang.annotation.Pointcut;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
+
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.lang.reflect.Method;
@@ -41,9 +44,14 @@ public class MsLoggerAspect {
 
     private static final TimeInterval TIMER = DateUtil.timer();
 
+    private final ApplicationContext applicationContext;
 
     @Resource
     private Logger logger;
+
+    public MsLoggerAspect(ApplicationContext applicationContext) {
+        this.applicationContext = applicationContext;
+    }
 
 
     private static final String[] HEADERS = {
@@ -68,6 +76,11 @@ public class MsLoggerAspect {
 
     @Around("pointcut()")
     public Object recordSysLogger(ProceedingJoinPoint joinPoint) throws Throwable {
+        Class<? extends MsLoggerHandler> annotationHandler = getHandlerClass(joinPoint);
+        MsLoggerHandler loggerHandler = null;
+        if (annotationHandler != null && !annotationHandler.isInterface()) {
+            loggerHandler = applicationContext.getBean(annotationHandler);
+        }
         if (msLoggerProperties.isEnable()) {
             Logger logger = buildSysLogger(joinPoint);
             MsLoggerAbstractStrategy msLoggerStrategy = MsLoggerFactory.getMsLoggerStrategy(msLoggerProperties.getLoggerStrategy());
@@ -78,19 +91,41 @@ public class MsLoggerAspect {
                 result = joinPoint.proceed(args);
                 long cost = TIMER.intervalMs();
                 logger.setCost(cost);
-                msLoggerStrategy.doLog(logger,joinPoint,JSONUtil.toJsonStr(result),cost);
+                msLoggerStrategy.doLog(logger, joinPoint, JSONUtil.toJsonStr(result), cost);
             } catch (Throwable e) {
                 LOGGER.error("记录日志异常：{}", e.getMessage());
                 throw e;
             }
             return result;
-        } else {
-            return joinPoint.proceed();
         }
+        if (loggerHandler != null) {
+            loggerHandler.handleLogger();
+        }
+        return joinPoint.proceed();
+    }
+
+    /**
+     * 获取日志增强处理器
+     *
+     * @param joinPoint 切点
+     * @return 日志增强处理器
+     */
+    private Class<? extends MsLoggerHandler> getHandlerClass(ProceedingJoinPoint joinPoint) {
+        MethodSignature methodSignature = (MethodSignature) joinPoint.getSignature();
+        Method method = methodSignature.getMethod();
+        MsLogger msLoggerAnnotation = method.getAnnotation(MsLogger.class);
+        Class<? extends MsLoggerHandler> annotationHandler = msLoggerAnnotation.handler();
+        if (annotationHandler == null) {
+            Class<?> declaringClass = method.getDeclaringClass();
+            MsLogger annotation = declaringClass.getAnnotation(MsLogger.class);
+            annotationHandler = annotation.handler();
+        }
+        return annotationHandler;
     }
 
     /**
      * 构建日志对象
+     *
      * @param joinPoint 切点
      * @return 日志对象
      */
@@ -102,9 +137,9 @@ public class MsLoggerAspect {
         this.logger.setMethodName(declaringClass.getSimpleName() + "." + method.getName());
         if (logger != null) {
             this.logger.setLogDesc(logger.desc());
-        }else {
+        } else {
             MsLogger annotation = declaringClass.getAnnotation(MsLogger.class);
-            if (annotation != null){
+            if (annotation != null) {
                 this.logger.setLogDesc(annotation.desc());
             }
         }
@@ -151,7 +186,7 @@ public class MsLoggerAspect {
     /**
      * 从请求头部获取值，如果没有则返回 "unknown"。
      *
-     * @param request HTTP请求对象
+     * @param request    HTTP请求对象
      * @param headerName 头部名称
      * @return 头部的值或 "unknown"
      */
@@ -177,9 +212,9 @@ public class MsLoggerAspect {
         return ip;
     }
 
-
-
-
+    private boolean isInterface(Class<? extends MsLoggerHandler> clazz) {
+        return clazz.isInterface();
+    }
 
 
 }

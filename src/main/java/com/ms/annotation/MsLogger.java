@@ -1,6 +1,8 @@
 package com.ms.annotation;
 
 
+import com.ms.handler.MsLoggerHandler;
+
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -20,5 +22,10 @@ public @interface MsLogger {
      */
     String desc() default "";
 
+    /**
+     * 自定义日志处理
+     * @return 自定义日志处理逻辑
+     */
+    Class<? extends MsLoggerHandler> handler() default MsLoggerHandler.class;
 
 }
