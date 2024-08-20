@@ -2,12 +2,14 @@ package com.ms.dto;
 
 
 import lombok.Data;
+import org.springframework.stereotype.Component;
 
 /**
  * @author maoshan-classmate
  * @date 2024-08-14
  */
 @Data
+@Component
 public class SysLogger {
 
     /**

@@ -21,6 +21,7 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.multipart.support.MultipartFilter;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.lang.reflect.Method;
@@ -43,10 +44,11 @@ public class MsLoggerAspect {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MsLoggerAspect.class);
 
-
     private static final TimeInterval TIMER = DateUtil.timer();
 
-    private final SysLogger sysLogger = new SysLogger();
+    @Resource
+    private SysLogger sysLogger;
+
 
     private static final String[] HEADERS = {
             "X-Forwarded-For", "Proxy-Client-IP", "WL-Proxy-Client-IP",
@@ -73,7 +75,7 @@ public class MsLoggerAspect {
         if (msLoggerProperties.isEnable()) {
             SysLogger sysLogger = buildSysLogger(joinPoint);
             Object[] args = joinPoint.getArgs();
-            Object result = null;
+            Object result;
             try {
                 TIMER.start();
                 result = joinPoint.proceed(args);
@@ -99,9 +101,15 @@ public class MsLoggerAspect {
         MethodSignature methodSignature = (MethodSignature) joinPoint.getSignature();
         Method method = methodSignature.getMethod();
         MsLogger msLogger = method.getAnnotation(MsLogger.class);
-        sysLogger.setMethodName(method.getDeclaringClass().getSimpleName() + "." + method.getName());
+        Class<?> declaringClass = method.getDeclaringClass();
+        sysLogger.setMethodName(declaringClass.getSimpleName() + "." + method.getName());
         if (msLogger != null) {
             sysLogger.setLogDesc(msLogger.desc());
+        }else {
+            MsLogger annotation = declaringClass.getAnnotation(MsLogger.class);
+            if (annotation != null){
+                sysLogger.setLogDesc(annotation.desc());
+            }
         }
         try {
             // 处理入参
