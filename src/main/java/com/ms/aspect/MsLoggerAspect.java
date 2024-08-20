@@ -82,10 +82,10 @@ public class MsLoggerAspect {
             loggerHandler = applicationContext.getBean(annotationHandler);
         }
         Object[] args = joinPoint.getArgs();
+        Object result = null;
         if (msLoggerProperties.isEnable()) {
             Logger logger = buildSysLogger(joinPoint);
             MsLoggerAbstractStrategy msLoggerStrategy = MsLoggerFactory.getMsLoggerStrategy(msLoggerProperties.getLoggerStrategy());
-            Object result;
             try {
                 TIMER.start();
                 result = joinPoint.proceed(args);
@@ -100,7 +100,7 @@ public class MsLoggerAspect {
         if (loggerHandler != null) {
             loggerHandler.handleLogger();
         }
-        return joinPoint.proceed(args);
+        return result;
     }
 
     /**
@@ -113,13 +113,16 @@ public class MsLoggerAspect {
         MethodSignature methodSignature = (MethodSignature) joinPoint.getSignature();
         Method method = methodSignature.getMethod();
         MsLogger msLoggerAnnotation = method.getAnnotation(MsLogger.class);
-        Class<? extends MsLoggerHandler> annotationHandler = msLoggerAnnotation.handler();
-        if (annotationHandler == null) {
+        if (msLoggerAnnotation == null) {
             Class<?> declaringClass = method.getDeclaringClass();
-            MsLogger annotation = declaringClass.getAnnotation(MsLogger.class);
-            annotationHandler = annotation.handler();
+            msLoggerAnnotation = declaringClass.getAnnotation(MsLogger.class);
+        }else {
+            if (msLoggerAnnotation.handler().isInterface()){
+                Class<?> declaringClass = method.getDeclaringClass();
+                msLoggerAnnotation = declaringClass.getAnnotation(MsLogger.class);
+            }
         }
-        return annotationHandler;
+        return msLoggerAnnotation.handler();
     }
 
     /**
@@ -148,7 +151,7 @@ public class MsLoggerAspect {
             HashMap<String, Object> paramMap = new HashMap<>();
             Object[] args = joinPoint.getArgs();
             for (int i = 0; i < parameters.length; i++) {
-                com.ms.annotation.MsLogger auditLog = parameters[i].getAnnotation(com.ms.annotation.MsLogger.class);
+                MsLogger auditLog = parameters[i].getAnnotation(MsLogger.class);
                 if (auditLog != null) {
                     continue;
                 }
@@ -209,10 +212,6 @@ public class MsLoggerAspect {
             return parts[0].trim();
         }
         return ip;
-    }
-
-    private boolean isInterface(Class<? extends MsLoggerHandler> clazz) {
-        return clazz.isInterface();
     }
 
 
