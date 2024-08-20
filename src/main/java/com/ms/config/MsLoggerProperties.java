@@ -1,5 +1,6 @@
 package com.ms.config;
 
+import com.ms.enums.LoggerEnum;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -32,7 +33,7 @@ public class MsLoggerProperties {
     /**
      * 日志打印策略
      */
-    private String loggerStrategy = "SIMPLE";
+    private LoggerEnum loggerStrategy = LoggerEnum.SIMPLE;
 
 
 }

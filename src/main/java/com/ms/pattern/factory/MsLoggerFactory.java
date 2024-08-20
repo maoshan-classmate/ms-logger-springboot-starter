@@ -12,9 +12,9 @@ import com.ms.pattern.strategy.MsLoggerAbstractStrategy;
  */
 public class MsLoggerFactory {
 
-    public static MsLoggerAbstractStrategy getMsLoggerStrategy(String strategyCode) {
+    public static MsLoggerAbstractStrategy getMsLoggerStrategy(LoggerEnum loggerStrategy) {
         try {
-            return (MsLoggerAbstractStrategy) Class.forName(LoggerEnum.getLoggerStrategyClassName(strategyCode)).getDeclaredConstructor()
+            return (MsLoggerAbstractStrategy) Class.forName(loggerStrategy.getClassName()).getDeclaredConstructor()
                     .newInstance();
         } catch (Exception e) {
             throw new RuntimeException(e);

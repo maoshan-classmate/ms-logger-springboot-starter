@@ -21,17 +21,4 @@ public enum LoggerEnum {
     private final String className;
 
 
-    /**
-     * 获取日志策略类名
-     * @param strategyCode 日志策略代码
-     * @return 日志策略类名
-     */
-    public static String getLoggerStrategyClassName(String strategyCode) {
-        for (LoggerEnum loggerEnum : LoggerEnum.values()) {
-            if (loggerEnum.getStrategyCode().equals(strategyCode)) {
-                return loggerEnum.getClassName();
-            }
-        }
-        return SIMPLE.getClassName();
-    }
 }
