@@ -3,8 +3,9 @@ package com.ms.aspect;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.date.TimeInterval;
 import cn.hutool.json.JSONUtil;
+import com.ms.annotation.MsLogger;
 import com.ms.config.MsLoggerProperties;
-import com.ms.dto.MsLogger;
+import com.ms.dto.Logger;
 import com.ms.pattern.factory.MsLoggerFactory;
 import com.ms.pattern.strategy.MsLoggerAbstractStrategy;
 import lombok.extern.slf4j.Slf4j;
@@ -15,22 +16,15 @@ import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
 import org.aspectj.lang.annotation.Pointcut;
 import org.aspectj.lang.reflect.MethodSignature;
-import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
-import org.springframework.web.multipart.support.MultipartFilter;
-
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * @author maoshan-classmate
@@ -43,13 +37,13 @@ public class MsLoggerAspect {
 
     private final MsLoggerProperties msLoggerProperties = MsLoggerProperties.getInstance();
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(MsLoggerAspect.class);
+    private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(MsLoggerAspect.class);
 
     private static final TimeInterval TIMER = DateUtil.timer();
 
 
     @Resource
-    private MsLogger msLogger;
+    private Logger logger;
 
 
     private static final String[] HEADERS = {
@@ -67,15 +61,15 @@ public class MsLoggerAspect {
         if (msLoggerProperties.isEnable()) {
             ServletRequestAttributes requestAttributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
             HttpServletRequest request = requestAttributes.getRequest();
-            msLogger.setIpAddress(getClientIp(request));
-            msLogger.setApiUrl(request.getRequestURL().toString());
+            logger.setIpAddress(getClientIp(request));
+            logger.setApiUrl(request.getRequestURL().toString());
         }
     }
 
     @Around("pointcut()")
     public Object recordSysLogger(ProceedingJoinPoint joinPoint) throws Throwable {
         if (msLoggerProperties.isEnable()) {
-            MsLogger msLogger = buildSysLogger(joinPoint);
+            Logger logger = buildSysLogger(joinPoint);
             MsLoggerAbstractStrategy msLoggerStrategy = MsLoggerFactory.getMsLoggerStrategy(msLoggerProperties.getLoggerStrategy());
             Object[] args = joinPoint.getArgs();
             Object result;
@@ -83,8 +77,8 @@ public class MsLoggerAspect {
                 TIMER.start();
                 result = joinPoint.proceed(args);
                 long cost = TIMER.intervalMs();
-                msLogger.setCost(cost);
-                msLoggerStrategy.doLog(msLogger,joinPoint,JSONUtil.toJsonStr(result),cost);
+                logger.setCost(cost);
+                msLoggerStrategy.doLog(logger,joinPoint,JSONUtil.toJsonStr(result),cost);
             } catch (Throwable e) {
                 LOGGER.error("记录日志异常：{}", e.getMessage());
                 throw e;
@@ -100,18 +94,18 @@ public class MsLoggerAspect {
      * @param joinPoint 切点
      * @return 日志对象
      */
-    protected MsLogger buildSysLogger(ProceedingJoinPoint joinPoint) {
+    protected Logger buildSysLogger(ProceedingJoinPoint joinPoint) {
         MethodSignature methodSignature = (MethodSignature) joinPoint.getSignature();
         Method method = methodSignature.getMethod();
-        com.ms.annotation.MsLogger msLogger = method.getAnnotation(com.ms.annotation.MsLogger.class);
+        MsLogger logger = method.getAnnotation(MsLogger.class);
         Class<?> declaringClass = method.getDeclaringClass();
-        this.msLogger.setMethodName(declaringClass.getSimpleName() + "." + method.getName());
-        if (msLogger != null) {
-            this.msLogger.setLogDesc(msLogger.desc());
+        this.logger.setMethodName(declaringClass.getSimpleName() + "." + method.getName());
+        if (logger != null) {
+            this.logger.setLogDesc(logger.desc());
         }else {
-            com.ms.annotation.MsLogger annotation = declaringClass.getAnnotation(com.ms.annotation.MsLogger.class);
+            MsLogger annotation = declaringClass.getAnnotation(MsLogger.class);
             if (annotation != null){
-                this.msLogger.setLogDesc(annotation.desc());
+                this.logger.setLogDesc(annotation.desc());
             }
         }
         try {
@@ -127,12 +121,12 @@ public class MsLoggerAspect {
                 String name = parameters[i].getName();
                 paramMap.put(name, args[i]);
             }
-            this.msLogger.setParams(JSONUtil.toJsonStr(paramMap));
-            return this.msLogger;
+            this.logger.setParams(JSONUtil.toJsonStr(paramMap));
+            return this.logger;
         } catch (Exception e) {
             LOGGER.error("构建入参异常：{}", e.getMessage());
         }
-        return this.msLogger;
+        return this.logger;
     }
 
     /**
@@ -183,17 +177,7 @@ public class MsLoggerAspect {
         return ip;
     }
 
-    /**
-     * 过滤参数
-     * @param args 参数数组
-     * @return 过滤后的参数集合
-     */
-    private List<Object> filterArgs(Object[] args) {
-        return Arrays.stream(args).filter(object -> !(object instanceof MultipartFilter)
-                && !(object instanceof HttpServletRequest)
-                && !(object instanceof HttpServletResponse)
-        ).collect(Collectors.toList());
-    }
+
 
 
 

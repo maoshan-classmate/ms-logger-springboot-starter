@@ -1,7 +1,7 @@
 package com.ms.pattern.strategy;
 
 import cn.hutool.json.JSONUtil;
-import com.ms.dto.MsLogger;
+import com.ms.dto.Logger;
 import org.aspectj.lang.JoinPoint;
 import org.springframework.stereotype.Component;
 
@@ -16,7 +16,7 @@ import org.springframework.stereotype.Component;
 public class DetailLoggerStrategy extends MsLoggerAbstractStrategy{
 
     @Override
-    public void doLog(MsLogger msLogger, JoinPoint joinPoint, String outParams, long cost) {
+    public void doLog(Logger logger, JoinPoint joinPoint, String outParams, long cost) {
         LOGGER.info("\n\r=======================================\n\r" +
                         "日志描述:{} \n\r" +
                         "请求地址:{} \n\r" +
@@ -27,10 +27,10 @@ public class DetailLoggerStrategy extends MsLoggerAbstractStrategy{
                         "返回报文:{} \n\r" +
                         "处理耗时:{} ms \n\r" +
                         "=======================================\n\r",
-                msLogger.getLogDesc(),
-                msLogger.getIpAddress(),
-                msLogger.getApiUrl(),
-                msLogger.getMethodName(),
+                logger.getLogDesc(),
+                logger.getIpAddress(),
+                logger.getApiUrl(),
+                logger.getMethodName(),
                 joinPoint.getSignature(),
                 JSONUtil.toJsonStr(filterArgs(joinPoint.getArgs())),
                 outParams,

@@ -1,6 +1,6 @@
 package com.ms.pattern.strategy;
 
-import com.ms.dto.MsLogger;
+import com.ms.dto.Logger;
 import org.aspectj.lang.JoinPoint;
 import org.springframework.stereotype.Component;
 
@@ -15,14 +15,14 @@ import org.springframework.stereotype.Component;
 public class SimpleLoggerStrategy extends MsLoggerAbstractStrategy {
 
     @Override
-    public void doLog(MsLogger msLogger, JoinPoint joinPoint, String outParams, long cost) {
+    public void doLog(Logger logger, JoinPoint joinPoint, String outParams, long cost) {
         LOGGER.info("\n\r=======================================\n\r" +
                         "日志描述:{} \n\r" +
                         "请求接口URL:{} \n\r" +
                         "处理耗时:{} ms \n\r" +
                         "=======================================\n\r",
-                msLogger.getLogDesc(),
-                msLogger.getApiUrl(),
+                logger.getLogDesc(),
+                logger.getApiUrl(),
                 cost
         );
     }

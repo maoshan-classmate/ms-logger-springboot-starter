@@ -1,9 +1,8 @@
 package com.ms.pattern.strategy;
 
-import com.ms.dto.MsLogger;
+import com.ms.dto.Logger;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.JoinPoint;
-import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.multipart.support.MultipartFilter;
 
@@ -21,7 +20,7 @@ import java.util.stream.Collectors;
 @Slf4j
 public abstract class MsLoggerAbstractStrategy {
 
-    protected static final Logger LOGGER = LoggerFactory.getLogger(MsLoggerAbstractStrategy.class);
+    protected static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(MsLoggerAbstractStrategy.class);
 
     /**
      * 过滤参数
@@ -36,10 +35,10 @@ public abstract class MsLoggerAbstractStrategy {
     }
     /**
      * 日志输出
-     * @param msLogger 日志对象
+     * @param logger 日志对象
      * @param joinPoint 切点
      * @param outParams 返回参数
      * @param cost 花费时间
      */
-    public abstract void doLog(MsLogger msLogger, JoinPoint joinPoint, String outParams, long cost);
+    public abstract void doLog(Logger logger, JoinPoint joinPoint, String outParams, long cost);
 }

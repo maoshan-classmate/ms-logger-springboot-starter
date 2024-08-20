@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
  */
 @Data
 @Component
-public class MsLogger {
+public class Logger {
 
     /**
      * 方法名称
