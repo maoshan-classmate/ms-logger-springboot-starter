@@ -1,5 +1,5 @@
 org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
   com.ms.aspect.MsLoggerAspect,\
   com.ms.config.MsLoggerAutoConfiguration,\
-  com.ms.dto.SysLogger
+  com.ms.dto.MsLogger
   

@@ -3,9 +3,10 @@ package com.ms.aspect;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.date.TimeInterval;
 import cn.hutool.json.JSONUtil;
-import com.ms.annotation.MsLogger;
 import com.ms.config.MsLoggerProperties;
-import com.ms.dto.SysLogger;
+import com.ms.dto.MsLogger;
+import com.ms.pattern.factory.MsLoggerFactory;
+import com.ms.pattern.strategy.MsLoggerAbstractStrategy;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -46,8 +47,9 @@ public class MsLoggerAspect {
 
     private static final TimeInterval TIMER = DateUtil.timer();
 
+
     @Resource
-    private SysLogger sysLogger;
+    private MsLogger msLogger;
 
 
     private static final String[] HEADERS = {
@@ -65,23 +67,24 @@ public class MsLoggerAspect {
         if (msLoggerProperties.isEnable()) {
             ServletRequestAttributes requestAttributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
             HttpServletRequest request = requestAttributes.getRequest();
-            sysLogger.setIpAddress(getClientIp(request));
-            sysLogger.setApiUrl(request.getRequestURL().toString());
+            msLogger.setIpAddress(getClientIp(request));
+            msLogger.setApiUrl(request.getRequestURL().toString());
         }
     }
 
     @Around("pointcut()")
     public Object recordSysLogger(ProceedingJoinPoint joinPoint) throws Throwable {
         if (msLoggerProperties.isEnable()) {
-            SysLogger sysLogger = buildSysLogger(joinPoint);
+            MsLogger msLogger = buildSysLogger(joinPoint);
+            MsLoggerAbstractStrategy msLoggerStrategy = MsLoggerFactory.getMsLoggerStrategy(msLoggerProperties.getLoggerStrategy());
             Object[] args = joinPoint.getArgs();
             Object result;
             try {
                 TIMER.start();
                 result = joinPoint.proceed(args);
                 long cost = TIMER.intervalMs();
-                sysLogger.setCost(cost);
-                printLog(sysLogger,joinPoint,JSONUtil.toJsonStr(result),cost);
+                msLogger.setCost(cost);
+                msLoggerStrategy.doLog(msLogger,joinPoint,JSONUtil.toJsonStr(result),cost);
             } catch (Throwable e) {
                 LOGGER.error("记录日志异常：{}", e.getMessage());
                 throw e;
@@ -97,18 +100,18 @@ public class MsLoggerAspect {
      * @param joinPoint 切点
      * @return 日志对象
      */
-    protected SysLogger buildSysLogger(ProceedingJoinPoint joinPoint) {
+    protected MsLogger buildSysLogger(ProceedingJoinPoint joinPoint) {
         MethodSignature methodSignature = (MethodSignature) joinPoint.getSignature();
         Method method = methodSignature.getMethod();
-        MsLogger msLogger = method.getAnnotation(MsLogger.class);
+        com.ms.annotation.MsLogger msLogger = method.getAnnotation(com.ms.annotation.MsLogger.class);
         Class<?> declaringClass = method.getDeclaringClass();
-        sysLogger.setMethodName(declaringClass.getSimpleName() + "." + method.getName());
+        this.msLogger.setMethodName(declaringClass.getSimpleName() + "." + method.getName());
         if (msLogger != null) {
-            sysLogger.setLogDesc(msLogger.desc());
+            this.msLogger.setLogDesc(msLogger.desc());
         }else {
-            MsLogger annotation = declaringClass.getAnnotation(MsLogger.class);
+            com.ms.annotation.MsLogger annotation = declaringClass.getAnnotation(com.ms.annotation.MsLogger.class);
             if (annotation != null){
-                sysLogger.setLogDesc(annotation.desc());
+                this.msLogger.setLogDesc(annotation.desc());
             }
         }
         try {
@@ -117,19 +120,19 @@ public class MsLoggerAspect {
             HashMap<String, Object> paramMap = new HashMap<>();
             Object[] args = joinPoint.getArgs();
             for (int i = 0; i < parameters.length; i++) {
-                MsLogger auditLog = parameters[i].getAnnotation(MsLogger.class);
+                com.ms.annotation.MsLogger auditLog = parameters[i].getAnnotation(com.ms.annotation.MsLogger.class);
                 if (auditLog != null) {
                     continue;
                 }
                 String name = parameters[i].getName();
                 paramMap.put(name, args[i]);
             }
-            sysLogger.setParams(JSONUtil.toJsonStr(paramMap));
-            return sysLogger;
+            this.msLogger.setParams(JSONUtil.toJsonStr(paramMap));
+            return this.msLogger;
         } catch (Exception e) {
             LOGGER.error("构建入参异常：{}", e.getMessage());
         }
-        return sysLogger;
+        return this.msLogger;
     }
 
     /**
@@ -192,34 +195,7 @@ public class MsLoggerAspect {
         ).collect(Collectors.toList());
     }
 
-    /**
-     * 日志输出
-     * @param sysLogger 日志对象
-     * @param joinPoint 切点
-     * @param outParams 返回参数
-     * @param cost 花费时间
-     */
-    private void printLog(SysLogger sysLogger,JoinPoint joinPoint,String outParams,long cost) {
-        log.info("\n\r=======================================\n\r" +
-                        "日志描述:{} \n\r" +
-                        "请求地址:{} \n\r" +
-                        "请求接口URL:{} \n\r"+
-                        "请求方式:{} \n\r" +
-                        "请求类方法:{} \n\r" +
-                        "请求方法参数:{} \n\r" +
-                        "返回报文:{} \n\r" +
-                        "处理耗时:{} ms \n\r" +
-                        "=======================================\n\r",
-                sysLogger.getLogDesc(),
-                sysLogger.getIpAddress(),
-                sysLogger.getApiUrl(),
-                sysLogger.getMethodName(),
-                joinPoint.getSignature(),
-                JSONUtil.toJsonStr(filterArgs(joinPoint.getArgs())),
-                outParams,
-                cost
-        );
-    }
+
 
 
 }

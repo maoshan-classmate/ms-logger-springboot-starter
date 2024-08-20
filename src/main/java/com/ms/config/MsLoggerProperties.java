@@ -4,8 +4,6 @@ import lombok.Getter;
 import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
-import java.util.List;
-
 /**
  * @author xuzw
  * @version 1.0
@@ -32,9 +30,9 @@ public class MsLoggerProperties {
     private boolean enable = true;
 
     /**
-     * 日志监控路径
+     * 日志打印策略
      */
-    private List<String> includePaths;
+    private String loggerStrategy = "SIMPLE";
 
 
 }
