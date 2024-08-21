@@ -5,6 +5,8 @@ import com.ms.dto.Logger;
 import org.aspectj.lang.JoinPoint;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDateTime;
+
 /**
  * @description 详细日志策略
  * @author xuzw
@@ -19,6 +21,7 @@ public class DetailLoggerStrategy extends MsLoggerAbstractStrategy{
     public void doLog(Logger logger, JoinPoint joinPoint, String outParams, long cost) {
         LOGGER.info("\n\r=======================================\n\r" +
                         "日志描述:{} \n\r" +
+                        "请求时间:{} \n\r"+
                         "请求地址:{} \n\r" +
                         "请求接口URL:{} \n\r"+
                         "请求方式:{} \n\r" +
@@ -28,6 +31,7 @@ public class DetailLoggerStrategy extends MsLoggerAbstractStrategy{
                         "处理耗时:{} ms \n\r" +
                         "=======================================\n\r",
                 logger.getLogDesc(),
+                LocalDateTime.now(),
                 logger.getIpAddress(),
                 logger.getApiUrl(),
                 logger.getMethodName(),
