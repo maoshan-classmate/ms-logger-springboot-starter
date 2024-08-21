@@ -33,7 +33,7 @@ public class MsLoggerProperties {
     /**
      * 日志打印策略
      */
-    private LoggerEnum loggerStrategy = LoggerEnum.SIMPLE;
+    private LoggerEnum strategy = LoggerEnum.SIMPLE;
 
 
 }

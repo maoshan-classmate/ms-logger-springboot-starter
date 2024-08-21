@@ -13,7 +13,14 @@ import lombok.Getter;
 @AllArgsConstructor
 public enum LoggerEnum {
 
+    /**
+     * 简单日志策略
+     */
     SIMPLE("SIMPLE", "简单日志策略", "com.ms.pattern.strategy.SimpleLoggerStrategy"),
+
+    /**
+     * 详细日志策略
+     */
     DETAIL("DETAIL", "详细日志策略", "com.ms.pattern.strategy.DetailLoggerStrategy");
 
     private final String strategyCode;

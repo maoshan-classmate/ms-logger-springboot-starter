@@ -85,7 +85,7 @@ public class MsLoggerAspect {
         Object result = null;
         if (msLoggerProperties.isEnable()) {
             Logger logger = buildSysLogger(joinPoint);
-            MsLoggerAbstractStrategy msLoggerStrategy = MsLoggerFactory.getMsLoggerStrategy(msLoggerProperties.getLoggerStrategy());
+            MsLoggerAbstractStrategy msLoggerStrategy = MsLoggerFactory.getMsLoggerStrategy(msLoggerProperties.getStrategy());
             try {
                 TIMER.start();
                 result = joinPoint.proceed(args);
