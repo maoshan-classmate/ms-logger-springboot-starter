@@ -1,5 +1,7 @@
 package com.ms.pattern.strategy;
 
+import cn.hutool.core.date.DatePattern;
+import cn.hutool.core.date.LocalDateTimeUtil;
 import cn.hutool.json.JSONUtil;
 import com.ms.dto.Logger;
 import org.aspectj.lang.JoinPoint;
@@ -31,7 +33,7 @@ public class DetailLoggerStrategy extends MsLoggerAbstractStrategy{
                         "处理耗时:{} ms \n\r" +
                         "=======================================\n\r",
                 logger.getLogDesc(),
-                LocalDateTime.now(),
+                LocalDateTimeUtil.format(LocalDateTime.now(), DatePattern.NORM_DATETIME_PATTERN),
                 logger.getIpAddress(),
                 logger.getApiUrl(),
                 logger.getMethodName(),
