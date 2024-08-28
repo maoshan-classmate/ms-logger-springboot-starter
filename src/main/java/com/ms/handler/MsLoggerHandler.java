@@ -1,7 +1,7 @@
 package com.ms.handler;
 
 
-import org.springframework.stereotype.Component;
+import org.aspectj.lang.ProceedingJoinPoint;
 
 /**
  * @author xuzw
@@ -13,7 +13,7 @@ public interface MsLoggerHandler {
     /**
      * 自定义日志处理
      */
-    void handleLogger();
+    void handleLogger(ProceedingJoinPoint joinPoint);
 
 
 }

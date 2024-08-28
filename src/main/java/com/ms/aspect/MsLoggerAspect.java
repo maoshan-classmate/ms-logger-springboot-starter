@@ -98,7 +98,7 @@ public class MsLoggerAspect {
             }
         }
         if (loggerHandler != null) {
-            loggerHandler.handleLogger();
+            loggerHandler.handleLogger(joinPoint);
         }
         return result;
     }
