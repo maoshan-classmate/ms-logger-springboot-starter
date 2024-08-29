@@ -12,6 +12,7 @@ public interface MsLoggerHandler {
 
     /**
      * 自定义日志处理
+     * @param joinPoint 切点
      */
     void handleLogger(ProceedingJoinPoint joinPoint);
 

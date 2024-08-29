@@ -3,6 +3,7 @@ package com.ms.aspect;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.date.TimeInterval;
 import cn.hutool.json.JSONUtil;
+import com.ms.event.MsLoggerEvent;
 import com.ms.handler.MsLoggerHandler;
 import com.ms.annotation.MsLogger;
 import com.ms.config.MsLoggerProperties;
@@ -45,6 +46,7 @@ public class MsLoggerAspect {
     private static final TimeInterval TIMER = DateUtil.timer();
 
     private final ApplicationContext applicationContext;
+
 
     @Resource
     private Logger logger;
@@ -98,7 +100,7 @@ public class MsLoggerAspect {
             }
         }
         if (loggerHandler != null) {
-            loggerHandler.handleLogger(joinPoint);
+            applicationContext.publishEvent(new MsLoggerEvent(loggerHandler,joinPoint));
         }
         return result;
     }
