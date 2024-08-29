@@ -25,6 +25,5 @@ public class SimpleLoggerStrategy extends MsLoggerAbstractStrategy {
                 logger.getApiUrl(),
                 cost
         );
-        LOGGER.info("当前线程 ID: {}", Thread.currentThread().getId());
     }
 }
