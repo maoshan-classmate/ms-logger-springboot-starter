@@ -39,6 +39,7 @@ handler() 默认为未实现增强日志的处理器接口，可通过自定义�
 2、注解使用
 
 ![image](https://github.com/user-attachments/assets/1251bea5-2178-4cf8-8b23-bcebeb7efac4)
+![image](https://github.com/user-attachments/assets/927e9f49-dd7d-4f46-b0d6-d7aaec4fa8e0)
 
 3、简单日志打印策略
 
