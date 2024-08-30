@@ -34,22 +34,23 @@ handler() 默认为未实现增强日志的处理器接口，可通过自定义�
 
 1、配置属性
 
-![image-20240830194307731](C:\Users\WINDOWS\AppData\Roaming\Typora\typora-user-images\image-20240830194307731.png)
+![image-20240830194307731](https://github.com/user-attachments/assets/313e6922-763d-4bab-bb0f-3804beb951a6)
 
 2、注解使用
 
-![image-20240830194403751](C:\Users\WINDOWS\AppData\Roaming\Typora\typora-user-images\image-20240830194403751.png)
+![image-20240830194403751](https://github.com/user-attachments/assets/b5df9d41-189b-4a43-835d-c90e0eb8b2f8)
 
-![image-20240830194422259](C:\Users\WINDOWS\AppData\Roaming\Typora\typora-user-images\image-20240830194422259.png)
+![image-20240830194422259](https://github.com/user-attachments/assets/18c97536-2866-4afd-84a4-e083465cdf46)
 
 3、简单日志打印策略
 
-![image-20240830194201520](C:\Users\WINDOWS\AppData\Roaming\Typora\typora-user-images\image-20240830194201520.png)
+![image-20240830194201520](https://github.com/user-attachments/assets/f3b89e26-240e-47eb-8871-816a63e0cd50)
 
 4、详细日志打印策略
 
-![image-20240830194552335](C:\Users\WINDOWS\AppData\Roaming\Typora\typora-user-images\image-20240830194552335.png)
+![image-20240830194552335](https://github.com/user-attachments/assets/4aef1efc-a482-436f-b65b-d71cc22adc98)
 
 5、自定义增强日志处理器
 
-![image-20240830194615779](C:\Users\WINDOWS\AppData\Roaming\Typora\typora-user-images\image-20240830194615779.png)
+![image-20240830194615779](https://github.com/user-attachments/assets/5210e32d-67d7-487d-93b5-7de72d848ca5)
+
