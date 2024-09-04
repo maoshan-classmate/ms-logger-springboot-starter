@@ -70,9 +70,11 @@ public class MsLoggerAspect {
     public void doBefore(JoinPoint joinPoint) {
         if (msLoggerProperties.isEnable()) {
             ServletRequestAttributes requestAttributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
-            HttpServletRequest request = requestAttributes.getRequest();
-            logger.setIpAddress(getClientIp(request));
-            logger.setApiUrl(request.getRequestURL().toString());
+            if (requestAttributes != null){
+                HttpServletRequest request = requestAttributes.getRequest();
+                logger.setIpAddress(getClientIp(request));
+                logger.setApiUrl(request.getRequestURL().toString());
+            }
         }
     }
 
