@@ -97,6 +97,14 @@ public class MsLoggerAspect {
                 logger.setCost(cost);
                 msLoggerStrategy.doLog(logger, joinPoint, JSONUtil.toJsonStr(result), cost);
             } catch (Throwable e) {
+                Class<? extends MsLoggerHandler> exceptionHandler = getExceptionHandler(joinPoint);
+                MsLoggerHandler exceptionLoggerHandler = null;
+                if (exceptionHandler != null && !exceptionHandler.isInterface()) {
+                    exceptionLoggerHandler = applicationContext.getBean(exceptionHandler);
+                }
+                if (exceptionLoggerHandler != null) {
+                    applicationContext.publishEvent(new MsLoggerEvent(exceptionLoggerHandler,joinPoint));
+                }
                 LOGGER.error("记录日志异常：{}", e.getMessage());
                 throw e;
             }
@@ -106,6 +114,26 @@ public class MsLoggerAspect {
         }
         return result;
     }
+
+    /**
+     * 获取日志异常处理器
+     */
+    private Class<? extends MsLoggerHandler>  getExceptionHandler(ProceedingJoinPoint joinPoint) {
+        MethodSignature methodSignature = (MethodSignature) joinPoint.getSignature();
+        Method method = methodSignature.getMethod();
+        MsLogger msLoggerAnnotation = method.getAnnotation(MsLogger.class);
+        if (msLoggerAnnotation == null) {
+            Class<?> declaringClass = method.getDeclaringClass();
+            msLoggerAnnotation = declaringClass.getAnnotation(MsLogger.class);
+        }else {
+            if (msLoggerAnnotation.exceptionHandler().isInterface()){
+                Class<?> declaringClass = method.getDeclaringClass();
+                msLoggerAnnotation = declaringClass.getAnnotation(MsLogger.class);
+            }
+        }
+        return msLoggerAnnotation.exceptionHandler();
+    }
+
 
     /**
      * 获取日志增强处理器

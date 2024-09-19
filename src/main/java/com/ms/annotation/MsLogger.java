@@ -28,4 +28,10 @@ public @interface MsLogger {
      */
     Class<? extends MsLoggerHandler> handler() default MsLoggerHandler.class;
 
+    /**
+     * 自定义异常处理
+     */
+    Class<? extends MsLoggerHandler> exceptionHandler() default MsLoggerHandler.class;
+
+
 }
