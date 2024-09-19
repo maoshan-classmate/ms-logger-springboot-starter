@@ -114,6 +114,8 @@ public class MsLoggerAspect {
 
     /**
      * 获取日志异常处理器
+     * @param joinPoint  切点
+     * @return 日志异常处理器
      */
     private Class<? extends MsLoggerHandler>  getExceptionHandler(ProceedingJoinPoint joinPoint) {
         MethodSignature methodSignature = (MethodSignature) joinPoint.getSignature();
