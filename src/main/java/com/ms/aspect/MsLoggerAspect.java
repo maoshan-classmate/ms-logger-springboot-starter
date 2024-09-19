@@ -66,8 +66,9 @@ public class MsLoggerAspect {
     public void pointcut() {
     }
 
-    @Before("pointcut()")
-    public void doBefore(JoinPoint joinPoint) {
+
+    @Around("pointcut()")
+    public Object recordSysLogger(ProceedingJoinPoint joinPoint) throws Throwable {
         if (msLoggerProperties.isEnable()) {
             ServletRequestAttributes requestAttributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
             if (requestAttributes != null){
@@ -76,10 +77,6 @@ public class MsLoggerAspect {
                 logger.setApiUrl(request.getRequestURL().toString());
             }
         }
-    }
-
-    @Around("pointcut()")
-    public Object recordSysLogger(ProceedingJoinPoint joinPoint) throws Throwable {
         Class<? extends MsLoggerHandler> annotationHandler = getHandlerClass(joinPoint);
         MsLoggerHandler loggerHandler = null;
         if (annotationHandler != null && !annotationHandler.isInterface()) {
