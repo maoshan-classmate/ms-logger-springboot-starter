@@ -16,14 +16,23 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @ConfigurationProperties(prefix = "ms.logger")
 public class MsLoggerProperties {
 
+
+    private MsLoggerProperties() {
+    }
+
     private static MsLoggerProperties instance;
 
     public static MsLoggerProperties getInstance() {
         if (instance == null) {
-            instance = new MsLoggerProperties();
+            synchronized (MsLoggerProperties.class) {
+                if (instance == null) {
+                    instance = new MsLoggerProperties();
+                }
+            }
         }
         return instance;
     }
+
 
     /**
      * 是否开启日志打印
