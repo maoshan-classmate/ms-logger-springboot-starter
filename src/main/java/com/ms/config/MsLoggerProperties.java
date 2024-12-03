@@ -20,7 +20,7 @@ public class MsLoggerProperties {
     private MsLoggerProperties() {
     }
 
-    private static MsLoggerProperties instance;
+    private static volatile MsLoggerProperties instance;
 
     public static MsLoggerProperties getInstance() {
         if (instance == null) {
